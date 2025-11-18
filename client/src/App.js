@@ -5,37 +5,43 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Replace this with your deployed backend URL
+  const BACKEND_URL = "https://arthur-backend-deployment-file.onrender.com";
+
   useEffect(() => {
-    // Fetch bugs from your Render backend using the environment variable
-    fetch(`${process.env.REACT_APP_BACKEND_URL}/api/bugs`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Failed to fetch bugs");
+    const fetchBugs = async () => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/bugs`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return res.json();
-      })
-      .then((data) => {
+        const data = await response.json();
         setBugs(data);
         setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         setError(err.message);
         setLoading(false);
-      });
+      }
+    };
+
+    fetchBugs();
   }, []);
+
+  if (loading) return <p>Loading bugs…</p>;
+  if (error) return <p>Error: {error}</p>;
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial" }}>
       <h1>MERN Bug Tracker Frontend</h1>
-      {loading && <p>Loading bugs…</p>}
-      {error && <p style={{ color: "red" }}>Error: {error}</p>}
-      {!loading && !error && (
+      {bugs.length === 0 ? (
+        <p>No bugs found.</p>
+      ) : (
         <ul>
-          {bugs.length > 0 ? (
-            bugs.map((bug, index) => <li key={index}>{bug.title}</li>)
-          ) : (
-            <p>No bugs found</p>
-          )}
+          {bugs.map((bug) => (
+            <li key={bug._id}>
+              <strong>{bug.title}</strong>: {bug.description}
+            </li>
+          ))}
         </ul>
       )}
     </div>
